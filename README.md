@@ -37,7 +37,7 @@ $ aqueduct --h
 usage: aqueduct [-h] [--addacct] [--addreg] [--addtag] [--bootstrap]
                 [--delacct] [--delreg] [--deltag] [--ssosetup]
 
-aqueduct v0.0.2
+aqueduct v0.0.3
 
 optional arguments:
   -h, --help   show this help message and exit

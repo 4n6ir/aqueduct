@@ -6,7 +6,7 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name="aqueduct",
+    name="aqueduct-utility",
     version=__version__,
     description="Automate Cloud Development Kit (CDK) bootstrapping into an AWS Organization using Single Sign-On (SSO) authentication.",
     long_description=long_description,

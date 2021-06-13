@@ -33,22 +33,25 @@ add -h or --help for usage help
 ### Help Menu
 
 ```
-$ aqueduct --h
+$ aqueduct -h
 usage: aqueduct [-h] [--addacct] [--addreg] [--addtag] [--bootstrap]
-                [--delacct] [--delreg] [--deltag] [--ssosetup]
+                [--delacct] [--delreg] [--deltag] [--deployall] [--destroyall]
+                [--ssosetup]
 
-aqueduct v0.0.3
+aqueduct v0.1.0
 
 optional arguments:
-  -h, --help   show this help message and exit
-  --addacct    Add Account
-  --addreg     Add Region
-  --addtag     Add Tag
-  --bootstrap  Bootstrap CDK
-  --delacct    Delete Account
-  --delreg     Delete Region
-  --deltag     Delete Tag
-  --ssosetup   SSO Setup
+  -h, --help    show this help message and exit
+  --addacct     Add Account
+  --addreg      Add Region
+  --addtag      Add Tag
+  --bootstrap   Bootstrap CDK
+  --delacct     Delete Account
+  --delreg      Delete Region
+  --deltag      Delete Tag
+  --deployall   Deploy All
+  --destroyall  Destroy All
+  --ssosetup    SSO Setup
 ```
 
 ### Add Account
@@ -96,12 +99,11 @@ Execution policies: arn:aws:iam::aws:policy/AdministratorAccess
 cdk-bootstrap-4n6ir-111111111111-us-east-2: creating CloudFormation changeset...
 [██████████████████████████████████████████████████████████] (11/11)
 
-
-
-
-
-
-
-
  ✅  Environment aws://111111111111/us-east-2 bootstrapped.
+```
+
+### Local Development
+
+```
+$ python setup.py install --user
 ```

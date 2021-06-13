@@ -62,6 +62,38 @@ def deltag(pathconfig):
     config['tags'].remove(tag)
     configwrite(pathconfig,config)
 
+def deployall(pathconfig):
+    config = configread(pathconfig)
+    package = input('CDK Package [ ]: ').strip()
+    checkpkg = os.path.isdir(package)
+    if checkpkg == False:
+        print('CDK Package Unavailable')
+    else:
+        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
+        if checkvenv == False:
+            os.system('cd '+package+' && python3 -m venv .venv')
+        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
+    for account in config['accounts']:
+        for key, value in account.items():
+            os.system('cd '+package+' && source .venv/bin/activate && cdk deploy --profile '+ \
+            key+' --all --require-approval never')
+
+def destroyall(pathconfig):
+    config = configread(pathconfig)
+    package = input('CDK Package [ ]: ').strip()
+    checkpkg = os.path.isdir(package)
+    if checkpkg == False:
+        print('CDK Package Unavailable')
+    else:
+        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
+        if checkvenv == False:
+            os.system('cd '+package+' && python3 -m venv .venv')
+        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
+    for account in config['accounts']:
+        for key, value in account.items():
+            os.system('cd '+package+' && source .venv/bin/activate && cdk destroy --profile '+ \
+            key+' --all --force')
+
 def pipeline(config, key, value, region, tags):
     os.system('export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap aws://'+str(value)+'/'+region+ \
     ' --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --trust '+ \
@@ -145,6 +177,8 @@ def main():
     parser.add_argument('--delacct', action='store_true', help='Delete Account')
     parser.add_argument('--delreg', action='store_true', help='Delete Region')
     parser.add_argument('--deltag', action='store_true', help='Delete Tag')
+    parser.add_argument('--deployall', action='store_true', help='Deploy All')
+    parser.add_argument('--destroyall', action='store_true', help='Destroy All')
     parser.add_argument('--ssosetup', action='store_true', help='SSO Setup')
     args = parser.parse_args()
 
@@ -162,6 +196,10 @@ def main():
         delreg(pathconfig)
     elif(args.deltag):
         deltag(pathconfig)
+    elif(args.deployall):
+        deployall(pathconfig)
+    elif(args.destroyall):
+        destroyall(pathconfig)
     elif(args.ssosetup):
         ssosetup(pathconfig,ssoconfig)        
     else:

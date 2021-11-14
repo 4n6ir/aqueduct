@@ -46,9 +46,10 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.5.0
+AQUEDUCT v0.5.1
 --------------------------------
 > Bootstrap
+  Command
   Configure
   Deploy
   Destroy

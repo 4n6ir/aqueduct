@@ -14,6 +14,11 @@ def action(menu, path, sso):
         print('Bootstrapping...')
         print(' ')
         bootstrap(path)
+    elif menu == "Command":
+        print(' ')
+        print('Command Line...')
+        print(' ')
+        command(path)
     elif menu == "Configure":
         print(' ')
         print('Configuring...')
@@ -85,6 +90,39 @@ def bootstrap(path):
 
     main()
 
+def command(path):
+    print('--------------------------------')
+    print('AQUEDUCT CLI')
+    print('--------------------------------')
+    config = reader(path)
+    cli = input('cli i.e. aws s3 ls: ').strip()
+    print(' ')
+    print(cli)
+    print(' ')
+    print('Correct?')
+    print(' ')
+    options = [
+        "No",
+        "Yes"
+    ]
+    terminal_menu = TerminalMenu(options)
+    menu_entry_index = terminal_menu.show()
+    
+    if options[menu_entry_index] == 'Yes':
+        for account in config['accounts']:
+            for key, value in account.items():
+                for region in config['regions']:
+                    print('--------------------------------')
+                    print('CLI '+key+' '+str(value)+' '+region)
+                    print('--------------------------------')
+                    os.system(cli+' --profile '+key+' --region '+region)
+
+    print(' ')
+    print('Command Completed...')
+    print(' ') 
+    
+    main()
+    
 def configure(path, sso):
     print('--------------------------------')
     print('AQUEDUCT CONFIGURATION')
@@ -454,7 +492,7 @@ def main():
     verawssso =  getawssso.read()
     if len(verawssso.decode()) == 0:
         print('--------------------------------')
-        print('AWS SSO UTIL - PRE-REQUISITE')
+        print('AWS-SSO-UTIL - PRE-REQUISITE')
         print('--------------------------------')
         print('$ pip install aws-sso-util')
         print(' ')
@@ -530,6 +568,7 @@ def main():
     
     options = [
         "Bootstrap",
+        "Command",
         "Configure",
         "Deploy",
         "Destroy",

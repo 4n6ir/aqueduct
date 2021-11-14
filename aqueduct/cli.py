@@ -1,126 +1,468 @@
-import argparse
+import boto3
 import json
 import os
+import subprocess
+import sys
 from aqueduct import __version__
+from simple_term_menu import TerminalMenu
 
-def addacct(pathconfig):
-    config = configread(pathconfig)
-    account_name = input('Account Name [ ]: ').strip()
-    account_number = input('Account Number [ ]: ').strip()
-    config['accounts'].append({account_name : account_number})
-    configwrite(pathconfig,config)
+### ANSWER MAIN MENU OPTIONS ###
 
-def addreg(pathconfig):
-    config = configread(pathconfig)
-    region = input('Region [ ]: ').strip()
-    config['regions'].append(region)
-    configwrite(pathconfig,config)
+def action(menu, path, sso):
+    if menu == "Bootstrap":
+        print(' ')
+        print('Bootstrapping...')
+        print(' ')
+        bootstrap(path)
+    elif menu == "Configure":
+        print(' ')
+        print('Configuring...')
+        print(' ')
+        configure(path, sso)
+    elif menu == "Deploy":
+        print(' ')
+        print('Deploying...')
+        print(' ')
+        deploy(path)
+    elif menu == "Destroy":
+        print(' ')
+        print('Destroying...')
+        print(' ')
+        destroy(path)
+    if menu == 'Quit':
+        print(' ')
+        print('Quiting...')
+        print(' ')
+        quit()
 
-def addtag(pathconfig):
-    config = configread(pathconfig)
-    tag = input('tag i.e. key=value: ').strip()
-    config['tags'].append(tag)
-    configwrite(pathconfig,config)
+### ALL ACCOUNTS ###
 
-def bootstrap(pathconfig):
-    config = configread(pathconfig)
-    tags = taglist(config)
+def allaccounts(config, acctlist, value):
+    for line in acctlist:
+        item = line.split('_')
+        if item[0] != 'All' and item[0] != 'Existing' and item[0] != 'None':
+            config[value].append({item[0] : item[1]})
+    return config
+
+### ALL REGIONS ###
+
+def allregions(regionlist):
+    regionclean = []
+    for region in regionlist:
+        regionclean.append(region)
+    return regionclean
+
+def bootstrap(path):
+    print('--------------------------------')
+    print('AQUEDUCT BOOTSTRAP')
+    print('--------------------------------')
+    config = reader(path)
+
+    trusts = ''
+    if len(config['cdk_trusts']) != 0:
+        for trust in config['cdk_trusts']:
+            for key, value in trust.items():
+                trusts = trusts+str(value)+','
+
+    lookups = ''
+    if len(config['cdk_lookups']) != 0:
+        for lookup in config['cdk_lookups']:
+            for key, value in lookup.items():
+                lookups = lookups+str(value)+','      
+
+    tags = ''
+    for tag in config['tags']:
+        tags = tags+'--tags '+tag+' '
+
     for account in config['accounts']:
         for key, value in account.items():
             for region in config['regions']:
-                pipeline(config, key, value, region, tags)
+                pipeline(config, key, value, region, tags, trusts, lookups)
 
-def configread(pathconfig):
-    with open(pathconfig, 'r', encoding='utf-8') as f:
-        config = json.load(f)
-    f.close()
-    return config
+    print(' ')
+    print('Bootstrapping Complete...')
+    print(' ')  
 
-def configwrite(pathconfig,config):
-    with open(pathconfig, 'w', encoding='utf-8') as f:
-        json.dump(config, f, ensure_ascii=False, indent=4)
-    f.close()
+    main()
 
-def delacct(pathconfig):
-    config = configread(pathconfig)
-    account_name = input('Account Name [ ]: ').strip()
-    account_number = input('Account Number [ ]: ').strip()
-    for i in range(len(config['accounts'])):
-        if config['accounts'][i].get(account_name) == account_number:
-            del config['accounts'][i]
-    configwrite(pathconfig,config)
+def configure(path, sso):
+    print('--------------------------------')
+    print('AQUEDUCT CONFIGURATION')
+    print('--------------------------------')
+    config = reader(path)
+    sso_start_url = input('SSO Start URL ['+config['sso_start_url']+']: ').strip() or config['sso_start_url']
+    sso_region = input('SSO Region ['+config['sso_region']+']: ').strip() or config['sso_region']
+    sso_role = input('SSO Role ['+config['sso_role']+']: ').strip() or config['sso_role']
+    cli_region = input('CLI Region ['+config['cli_region']+']: ').strip() or config['cli_region']
+    cli_output = input('CLI Output ['+config['cli_output']+']: ').strip() or config['cli_output']
+    cdk_qualifier = input('CDK Qualifier ['+config['cdk_qualifier']+']: ').strip() or config['cdk_qualifier']
+    config['sso_start_url'] = sso_start_url
+    config['sso_region'] = sso_region
+    config['sso_role'] = sso_role
+    config['cli_region'] = cli_region
+    config['cli_output'] = cli_output
+    config['cdk_qualifier'] = cdk_qualifier
 
-def delreg(pathconfig):
-    config = configread(pathconfig)
-    region = input('Region [ ]: ').strip()
-    config['regions'].remove(region)
-    configwrite(pathconfig,config)
+    ### ORAGANIZATION LIST ACCOUNTS ###
 
-def deltag(pathconfig):
-    config = configread(pathconfig)
-    tag = input('tag i.e. key=value: ').strip()
-    config['tags'].remove(tag)
-    configwrite(pathconfig,config)
+    acctlist = []
+    acctlist.append('All')
+    acctlist.append('Existing')
+    acctlist.append('None')
+    
+    try:
+        client = boto3.client('organizations')
+        paginator = client.get_paginator('list_accounts')
+        response_iterator = paginator.paginate()
+        for page in response_iterator:
+            for item in page['Accounts']:
+                acctlist.append(item['Name'].replace(" ","")+'_'+str(item['Id']))
+    except:
+        print(' ')
+        print('Missing IAM Permission --> organizations:ListAccounts')
+        print(' ')
+        sys.exit(1)
+        pass
 
-def deployall(pathconfig):
-    config = configread(pathconfig)
-    package = input('CDK Package [ ]: ').strip()
-    checkpkg = os.path.isdir(package)
-    if checkpkg == False:
-        print('CDK Package Unavailable')
+    print('--------------------------------')
+    print('CDK TRUST ACCOUNT(S)')
+    print('--------------------------------')
+    
+    value = 'cdk_trusts'
+    
+    terminal_menu = TerminalMenu(
+        acctlist,
+        multi_select = True,
+        show_multi_select_hint = True
+    )
+    menu_entry_indices = terminal_menu.show()
+    
+    if 'All' in terminal_menu.chosen_menu_entries:
+        config = allaccounts(config, acctlist, value)
+    elif 'Existing' in terminal_menu.chosen_menu_entries:
+        config[value] = config[value]
+    elif 'None' in terminal_menu.chosen_menu_entries:
+        config[value] = []
     else:
-        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
-        if checkvenv == False:
-            os.system('cd '+package+' && python3 -m venv .venv')
-        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
-    for account in config['accounts']:
-        for key, value in account.items():
-            os.system('cd '+package+' && source .venv/bin/activate && cdk deploy --profile '+ \
-            key+' --all --require-approval never')
+        config = allaccounts(config, terminal_menu.chosen_menu_entries, value)
+     
+    print('--------------------------------')
+    print('CDK LOOKUP ACCOUNT(S)')
+    print('--------------------------------')
 
-def destroyall(pathconfig):
-    config = configread(pathconfig)
-    package = input('CDK Package [ ]: ').strip()
-    checkpkg = os.path.isdir(package)
-    if checkpkg == False:
-        print('CDK Package Unavailable')
+    value = 'cdk_lookups'
+    
+    terminal_menu = TerminalMenu(
+        acctlist,
+        multi_select = True,
+        show_multi_select_hint = True
+    )
+    menu_entry_indices = terminal_menu.show()
+    
+    if 'All' in terminal_menu.chosen_menu_entries:
+        config = allaccounts(config, acctlist, value)
+    elif 'Existing' in terminal_menu.chosen_menu_entries:
+        config[value] = config[value]
+    elif 'None' in terminal_menu.chosen_menu_entries:
+        config[value] = []
     else:
-        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
-        if checkvenv == False:
-            os.system('cd '+package+' && python3 -m venv .venv')
-        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
-    for account in config['accounts']:
-        for key, value in account.items():
-            os.system('cd '+package+' && source .venv/bin/activate && cdk destroy --profile '+ \
-            key+' --all --force')
+        config = allaccounts(config, terminal_menu.chosen_menu_entries, value)
 
-def pipeline(config, key, value, region, tags):
-    os.system('export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap aws://'+str(value)+'/'+region+ \
-    ' --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --trust '+ \
-    str(config['cdk_trust'])+' --profile '+key+' --toolkit-stack-name cdk-bootstrap-'+config['cdk_qualifier']+ \
-    '-'+str(value)+'-'+region+' --termination-protection --qualifier '+config['cdk_qualifier']+' '+tags)
+    print('--------------------------------')
+    print('CDK DEPLOY ACCOUNT(S)')
+    print('--------------------------------')
 
-def ssosetup(pathconfig,ssoconfig):
-    config = configread(pathconfig)
-    cfgfile = open(ssoconfig,'w')
+    value = 'accounts'
+    
+    terminal_menu = TerminalMenu(
+        acctlist,
+        multi_select = True,
+        show_multi_select_hint = True
+    )
+    menu_entry_indices = terminal_menu.show()
+    
+    if 'All' in terminal_menu.chosen_menu_entries:
+        config = allaccounts(config, acctlist, value)
+    elif 'Existing' in terminal_menu.chosen_menu_entries:
+        config[value] = config[value]
+    elif 'None' in terminal_menu.chosen_menu_entries:
+        config[value] = []
+    else:
+        config = allaccounts(config, terminal_menu.chosen_menu_entries, value)
+
+    ### LIST ACTIVE REGIONS ###
+
+    regionlist = []
+    regionlist.append('All')
+    regionlist.append('Existing')
+    regionlist.append('None')
+    
+    try:
+        client = boto3.client('ec2')
+        regions = client.describe_regions()
+        for region in regions['Regions']:
+            regionlist.append(region['RegionName'])
+    except:
+        print(' ')
+        print('Missing IAM Permission --> ec2:DescribeRegions')
+        print(' ')
+        sys.exit(1)
+        pass
+
+    print('--------------------------------')
+    print('CDK DEPLOY REGION(S)')
+    print('--------------------------------')
+
+    value = 'regions'
+
+    terminal_menu = TerminalMenu(
+        regionlist,
+        multi_select = True,
+        show_multi_select_hint = True
+    )
+    menu_entry_indices = terminal_menu.show()
+    
+    if 'All' in terminal_menu.chosen_menu_entries:
+        config[value] = regionlist
+    elif 'Existing' in terminal_menu.chosen_menu_entries:
+        config[value] = config[value]
+    elif 'None' in terminal_menu.chosen_menu_entries:
+        config[value] = []
+    else:
+        config[value] = allregions(terminal_menu.chosen_menu_entries)
+
+    print('--------------------------------')
+    print('CDK DEPLOY TAG(S)')
+    print('--------------------------------')
+
+    print(' ')
+    print('Add Tag?')
+    print(' ')
+    options = [
+        "No",
+        "Yes"
+    ]
+    terminal_menu = TerminalMenu(options)
+    menu_entry_index = terminal_menu.show()
+    
+    if options[menu_entry_index] == 'Yes':
+        config['tags'] = tagger(config['tags'])
+
+    ### SAVE CONFIGURATION ###
+
+    writer(path, config)
+    
+    ### SSO SETUP ###
+    
+    config = reader(path)
+    
+    cfgfile = open(sso,'w')
     for account in config['accounts']:
         for key, value in account.items():
             cfgfile.write('[profile '+key+']\n')
+            cfgfile.write('credential_process = aws-sso-util credential-process --profile '+key+'\n')
             cfgfile.write('sso_start_url = '+config['sso_start_url']+'\n')    
             cfgfile.write('sso_region = '+config['sso_region']+'\n')
             cfgfile.write('sso_account_id = '+str(value)+'\n')
             cfgfile.write('sso_role_name = '+config['sso_role']+'\n')
             cfgfile.write('region = '+config['cli_region']+'\n')
-            cfgfile.write('output = '+config['cli_output']+'\n')
+            cfgfile.write('output = '+config['cli_output']+'\n\n')
     cfgfile.close()
+    
+    print(' ')
+    print('SSO Setup Complete...')
+    print(' ')    
+    
+    main()
 
-def taglist(config):
-    tags = ''
-    for tag in config['tags']:
-        tags = tags+'--tags '+tag+' '
+def deploy(path):
+    print('--------------------------------')
+    print('AQUEDUCT DEPLOY DIRECTORY')
+    print('--------------------------------')
+    config = reader(path)
+    
+    dirs = []
+    dirs.append('None')
+    directorys = os.listdir('.')
+    for directory in directorys:
+        checkdir = os.path.isdir(directory)
+        if checkdir == True:
+            dirs.append(directory)
+    
+    terminal_menu = TerminalMenu(dirs)
+    menu_entry_index = terminal_menu.show()
+    
+    if dirs[menu_entry_index] != 'None':
+        package = dirs[menu_entry_index]
+        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
+        if checkvenv == False:
+            os.system('cd '+package+' && python3 -m venv .venv')
+        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
+        for account in config['accounts']:
+            for key, value in account.items():
+                print('--------------------------------')
+                print('Deploy '+key+' '+str(value))
+                print('--------------------------------')
+                os.system('cd '+package+' && source .venv/bin/activate && cdk deploy --profile '+key+' --all --require-approval never')
+
+    print(' ')
+    print('Deployment Completed...')
+    print(' ')    
+    
+    main()
+
+def destroy(path):
+    print('--------------------------------')
+    print('AQUEDUCT DESTROY DIRECTORY')
+    print('--------------------------------')
+    config = reader(path)
+    
+    dirs = []
+    dirs.append('None')
+    directorys = os.listdir('.')
+    for directory in directorys:
+        checkdir = os.path.isdir(directory)
+        if checkdir == True:
+            dirs.append(directory)
+    
+    terminal_menu = TerminalMenu(dirs)
+    menu_entry_index = terminal_menu.show()
+    
+    if dirs[menu_entry_index] != 'None':
+        package = dirs[menu_entry_index]
+        checkvenv = os.path.isdir(os.path.join(package, '.venv'))
+        if checkvenv == False:
+            os.system('cd '+package+' && python3 -m venv .venv')
+        os.system('cd '+package+' && source .venv/bin/activate && pip3 install -r requirements.txt --upgrade')
+        for account in config['accounts']:
+            for key, value in account.items():
+                print('--------------------------------')
+                print('Destroy '+key+' '+str(value))
+                print('--------------------------------')
+                os.system('cd '+package+' && source .venv/bin/activate && cdk destroy --profile '+key+' --all --force')
+
+    print(' ')
+    print('Destroying Complete...')
+    print(' ')    
+    
+    main()
+
+def pipeline(config, key, value, region, tags, trusts, lookups):
+    
+    command = 'export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap aws://'+str(value)+'/'+region+ \
+    ' --cloudformation-execution-policies arn:aws:iam::aws:policy/AdministratorAccess --profile '+ \
+    key+' --toolkit-stack-name cdk-bootstrap-'+config['cdk_qualifier']+'-'+str(value)+'-'+region+ \
+    ' --termination-protection --qualifier '+config['cdk_qualifier']
+    
+    if len(tags) != 0:
+        command = command+' '+tags
+        
+    if len(trusts) != 0:
+        command = command+' --trust '+trusts[:-1]
+        
+    if len(lookups) != 0:
+        command = command+' --trust-for-lookup '+lookups[:-1]
+    
+    os.system(command)
+
+def quit():
+        
+    ### AWS-SSO-UTIL LOGOUT ###
+    print(' ')
+    print('Log Out?')
+    print(' ')
+    options = [
+        "No",
+        "Yes"
+    ]
+    terminal_menu = TerminalMenu(options)
+    menu_entry_index = terminal_menu.show()
+    
+    if options[menu_entry_index] == 'No':
+        print(' ')
+        print('Exited!')
+        print(' ')
+    else:
+        os.system('aws-sso-util logout')
+        print(' ')
+        print('Logged Out!')
+        print(' ')
+    sys.exit(1)
+
+def reader(path):
+    with open(path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+    f.close()
+    return config
+
+def tagger(tags):
+    status = 'Start'
+    
+    tag = input('tag i.e. key=value: ').strip()
+    tags.append(tag)
+
+    while status != 'Done':
+        
+        options = [
+            "Add",
+            "Clear",
+            "Done"
+        ]
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
+        
+        if options[menu_entry_index] == 'Add':
+            tag = input('tag i.e. key=value: ').strip()
+            tags.append(tag)
+        elif options[menu_entry_index] == 'Clear':
+            tags = []
+        elif options[menu_entry_index] == 'Done':
+            status = 'Done'
+    
     return tags
 
+def writer(path, config):
+    with open(path, 'w', encoding='utf-8') as f:
+        json.dump(config, f, ensure_ascii=False, indent=4)
+    f.close()
+    print(' ')
+    print('Saved!')
+    print(' ')
+
 def main():
+
+    ### AWSCLIv2 CHECK ###
+
+    getawscli =  subprocess.Popen("aws --version", shell=True, stdout=subprocess.PIPE).stdout
+    verawscli =  getawscli.read()
+    if verawscli.decode()[8] != '2':
+        print('--------------------------------')
+        print('AWSCLIv2 - PRE-REQUISITE')
+        print('--------------------------------')
+        print('$ curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"')
+        print('$ unzip awscliv2.zip')
+        print('$ sudo ./aws/install')
+        print('$ aws --version')
+        print(' ')
+        print('https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html')
+        print(' ')
+        sys.exit(1)
+
+    ### AWS-SSO-UTIL CHECK ###
+
+    getawssso =  subprocess.Popen("aws-sso-util --help", shell=True, stdout=subprocess.PIPE).stdout
+    verawssso =  getawssso.read()
+    if len(verawssso.decode()) == 0:
+        print('--------------------------------')
+        print('AWS SSO UTIL - PRE-REQUISITE')
+        print('--------------------------------')
+        print('$ pip install aws-sso-util')
+        print(' ')
+        print('https://github.com/benkehoe/aws-sso-util')
+        print(' ')
+        sys.exit(1)
+
+    ### AQUEDUCT CONFIGURATION ###
 
     awsdir = '.aws'
     configfile = 'aqueduct'
@@ -140,13 +482,17 @@ def main():
     checkconfig = os.path.isfile(os.path.join(homedir, awsdir, configfile))
     
     if checkconfig == False:
+        print('--------------------------------')
+        print('AQUEDUCT INITIAL SETUP')
+        print('--------------------------------')
         sso_start_url = input('SSO Start URL [ ]: ').strip()
         sso_region = input('SSO Region [ ]: ').strip()
         sso_role = input('SSO Role [AWSAdministratorAccess]: ').strip() or 'AWSAdministratorAccess'
         cli_region = input('CLI Region [ ]: ').strip()
         cli_output = input('CLI Output [json]: ').strip() or 'json'
         cdk_qualifier = input('CDK Qualifier [ ]: ').strip()
-        cdk_trust = input('CDK Trust [ ]: ').strip()
+        cdk_trusts = []
+        cdk_lookups = []
         accounts = []
         regions = []
         tags = []
@@ -158,7 +504,8 @@ def main():
         config['cli_region'] = cli_region
         config['cli_output'] = cli_output
         config['cdk_qualifier'] = cdk_qualifier
-        config['cdk_trust'] = cdk_trust
+        config['cdk_trusts'] = cdk_trusts
+        config['cdk_lookups'] = cdk_lookups
         config['accounts'] = accounts
         config['regions'] = regions
         config['tags'] = tags
@@ -166,41 +513,28 @@ def main():
         with open(os.path.join(homedir, awsdir, configfile), 'w', encoding='utf-8') as f:
             json.dump(config, f, ensure_ascii=False, indent=4)
         f.close()
-        
-    ### AQUEDUCT OPTIONS ###
 
-    parser = argparse.ArgumentParser(description = 'aqueduct v'+__version__)
-    parser.add_argument('--addacct', action='store_true', help='Add Account')
-    parser.add_argument('--addreg', action='store_true', help='Add Region')
-    parser.add_argument('--addtag', action='store_true', help='Add Tag')
-    parser.add_argument('--bootstrap', action='store_true', help='Bootstrap CDK')
-    parser.add_argument('--delacct', action='store_true', help='Delete Account')
-    parser.add_argument('--delreg', action='store_true', help='Delete Region')
-    parser.add_argument('--deltag', action='store_true', help='Delete Tag')
-    parser.add_argument('--deployall', action='store_true', help='Deploy All')
-    parser.add_argument('--destroyall', action='store_true', help='Destroy All')
-    parser.add_argument('--ssosetup', action='store_true', help='SSO Setup')
-    args = parser.parse_args()
+    ### AWS-SSO-UTIL LOGIN ###
+    
+    config = reader(pathconfig)
 
-    if(args.addacct):
-        addacct(pathconfig)
-    elif(args.addreg):
-        addreg(pathconfig)
-    elif(args.addtag):
-        addtag(pathconfig)
-    elif(args.bootstrap):
-        bootstrap(pathconfig)    
-    elif(args.delacct):
-        delacct(pathconfig)
-    elif(args.delreg):
-        delreg(pathconfig)
-    elif(args.deltag):
-        deltag(pathconfig)
-    elif(args.deployall):
-        deployall(pathconfig)
-    elif(args.destroyall):
-        destroyall(pathconfig)
-    elif(args.ssosetup):
-        ssosetup(pathconfig,ssoconfig)        
-    else:
-        print('add -h or --help for usage help')
+    os.system('export AWS_DEFAULT_SSO_START_URL='+config['sso_start_url']+ \
+              '&& export AWS_DEFAULT_SSO_REGION='+config['sso_region']+ \
+              '&& aws-sso-util login')
+
+    ### AQUEDUCT MENU ###
+    
+    print('--------------------------------')
+    print('AQUEDUCT v'+__version__)
+    print('--------------------------------')
+    
+    options = [
+        "Bootstrap",
+        "Configure",
+        "Deploy",
+        "Destroy",
+        "Quit"
+    ]
+    terminal_menu = TerminalMenu(options)
+    menu_entry_index = terminal_menu.show()
+    action(options[menu_entry_index], pathconfig, ssoconfig)

@@ -115,8 +115,15 @@ def command(path):
                     print('--------------------------------')
                     print('CLI '+key+' '+str(value)+' '+region)
                     print('--------------------------------')
-                    os.system(cli+' --profile '+key+' --region '+region)
-
+                    try:
+                        os.system(cli+' --profile '+key+' --region '+region)
+                        print(' ')
+                        print('SUCCESS!!')
+                        print(' ')
+                    except:
+                        print(' ')
+                        print('ERROR!!')
+                        print(' ')
     print(' ')
     print('Command Completed...')
     print(' ') 

@@ -154,7 +154,8 @@ def configure(path, sso):
         response_iterator = paginator.paginate()
         for page in response_iterator:
             for item in page['Accounts']:
-                acctlist.append(item['Name'].replace(" ","")+'_'+str(item['Id']))
+                if item['Status'] == 'ACTIVE':
+                    acctlist.append(item['Name'].replace(" ","")+'_'+str(item['Id']))
     except:
         print(' ')
         print('Missing IAM Permission --> organizations:ListAccounts')

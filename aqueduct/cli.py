@@ -1,10 +1,10 @@
 import boto3
 import json
 import os
-import subprocess
 import sys
 from aqueduct import __version__
 from simple_term_menu import TerminalMenu
+from subprocess import run
 
 ### ANSWER MAIN MENU OPTIONS ###
 
@@ -478,10 +478,17 @@ def writer(path, config):
 def main():
 
     ### AWSCLIv2 CHECK ###
-
-    getawscli =  subprocess.Popen("aws --version", shell=True, stdout=subprocess.PIPE).stdout
-    verawscli =  getawscli.read()
-    if verawscli.decode()[8] != '2':
+    p = run( [ 'aws', '--version' ], capture_output=True )
+    #print( 'exit status:', p.returncode )
+    #print( 'stdout:', p.stdout.decode() )
+    #print( 'stderr:', p.stderr.decode() )
+    try:
+        awscliversion = p.stderr.decode()[8]
+    except:
+        awscliversion = p.stdout.decode()[8]
+        pass
+    
+    if awscliversion != '2':
         print('--------------------------------')
         print('AWSCLIv2 - PRE-REQUISITE')
         print('--------------------------------')
@@ -495,10 +502,17 @@ def main():
         sys.exit(1)
 
     ### AWS-SSO-UTIL CHECK ###
-
-    getawssso =  subprocess.Popen("aws-sso-util --help", shell=True, stdout=subprocess.PIPE).stdout
-    verawssso =  getawssso.read()
-    if len(verawssso.decode()) == 0:
+    try:
+        p = run( [ 'aws-sso-util', '--help' ], capture_output=True )
+        awsssoutil = 'YES'
+        #print( 'exit status:', p.returncode )
+        #print( 'stdout:', p.stdout.decode() )
+        #print( 'stderr:', p.stderr.decode() )
+    except:
+        awsssoutil = 'NO'
+        pass
+    
+    if awsssoutil == 'NO':
         print('--------------------------------')
         print('AWS-SSO-UTIL - PRE-REQUISITE')
         print('--------------------------------')

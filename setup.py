@@ -21,5 +21,5 @@ setup(
     entry_points = {
         "console_scripts": ["aqueduct=aqueduct.cli:main"],
     },
-    python_requires = ">=3.6",
+    python_requires = ">=3.7",
 )

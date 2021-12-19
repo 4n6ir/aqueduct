@@ -12,7 +12,7 @@ I recommend using an AWS Account with Delegated Administration from Firewall Man
 - https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-getting-started.html
 
 ```
-curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 unzip awscliv2.zip
 sudo ./aws/install
 aws --version
@@ -46,7 +46,7 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.5.3
+AQUEDUCT v0.5.5
 --------------------------------
 > Bootstrap
   Command

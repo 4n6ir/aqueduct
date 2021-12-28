@@ -269,6 +269,9 @@ def configure(path, sso):
     menu_entry_indices = terminal_menu.show()
     
     if 'All' in terminal_menu.chosen_menu_entries:
+        regionlist.remove('All')
+        regionlist.remove('Existing')
+        regionlist.remove('None')
         config[value] = regionlist
     elif 'Existing' in terminal_menu.chosen_menu_entries:
         config[value] = config[value]

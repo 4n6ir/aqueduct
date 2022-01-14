@@ -44,7 +44,7 @@ def action(menu, path, sso):
 
 def allaccounts(config, acctlist, value):
     for line in acctlist:
-        item = line.split('_')
+        item = line.split('||')
         if item[0] != 'All' and item[0] != 'Existing' and item[0] != 'None':
             config[value].append({item[0] : item[1]})
     return config
@@ -162,7 +162,7 @@ def configure(path, sso):
         for page in response_iterator:
             for item in page['Accounts']:
                 if item['Status'] == 'ACTIVE':
-                    acctlist.append(item['Name'].replace(" ","")+'_'+str(item['Id']))
+                    acctlist.append(item['Name'].replace(" ","")+'||'+str(item['Id']))
     except:
         print(' ')
         print('Missing IAM Permission --> organizations:ListAccounts')

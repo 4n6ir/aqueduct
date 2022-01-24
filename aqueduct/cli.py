@@ -34,7 +34,12 @@ def action(menu, path, sso):
         print('Destroying...')
         print(' ')
         destroy(path)
-    if menu == 'Quit':
+    elif menu == "Presets":
+        print(' ')
+        print('Presets...')
+        print(' ')
+        presets()
+    elif menu == 'Quit':
         print(' ')
         print('Quiting...')
         print(' ')
@@ -414,6 +419,32 @@ def pipeline(config, key, value, region, tags, trusts, lookups):
     
     os.system(command)
 
+def presets():
+    print('--------------------------------')
+    print('AQUEDUCT PRESETS')
+    print('--------------------------------')
+    print(' ')
+    print('Directory:')
+    print(' ')
+    os.system('pwd')
+    print(' ')
+    
+    options = [
+        "cdk init app --language python",
+        "python3 -m venv .venv",
+        "source .venv/bin/activate",
+        "pip3 install -r requirements.txt --upgrade",
+        "npm install -g aws-cdk",
+        "Exit!"
+    ]
+    terminal_menu = TerminalMenu(options)
+    menu_entry_index = terminal_menu.show()
+    
+    if options[menu_entry_index] != 'Exit!':
+        os.system(options[menu_entry_index])
+    
+    main()
+    
 def quit():
         
     ### AWS-SSO-UTIL LOGOUT ###
@@ -597,6 +628,7 @@ def main():
         "Configure",
         "Deploy",
         "Destroy",
+        "Presets",
         "Quit"
     ]
     terminal_menu = TerminalMenu(options)

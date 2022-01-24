@@ -46,13 +46,14 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.5.5
+AQUEDUCT v0.6.1
 --------------------------------
 > Bootstrap
   Command
   Configure
   Deploy
   Destroy
+  Presets
   Quit
 ```
 

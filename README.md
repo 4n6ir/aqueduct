@@ -21,13 +21,13 @@ aws --version
 - https://github.com/benkehoe/aws-sso-util
 
 ```
-pip install aws-sso-util
+pip3 install aws-sso-util
 ```
 
 ### Installation
 
 ```
-pip install aqueduct-utility
+pip3 install aqueduct-utility
 ```
 
 ### Initial Configuration
@@ -46,16 +46,26 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.6.1
+AQUEDUCT v0.7.0
 --------------------------------
-> Bootstrap
+  Bootstrap
   Command
   Configure
   Deploy
   Destroy
+> Micropipeline
   Presets
   Quit
 ```
+
+### Conduit Micropipeline
+
+ - https://github.com/4n6ir/conduit
+
+Permissions
+
+ - lambda:InvokeFunction
+ - s3:PutObject
 
 ### Local Development
 

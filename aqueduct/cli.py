@@ -2,6 +2,7 @@ import boto3
 import json
 import os
 import sys
+import time
 from aqueduct import __version__
 from simple_term_menu import TerminalMenu
 from subprocess import run
@@ -34,6 +35,11 @@ def action(menu, path, sso):
         print('Destroying...')
         print(' ')
         destroy(path)
+    elif menu == "Micropipeline":
+        print(' ')
+        print('Micropipeline...')
+        print(' ')
+        micropipeline(path)
     elif menu == "Presets":
         print(' ')
         print('Presets...')
@@ -401,6 +407,113 @@ def destroy(path):
     
     main()
 
+def micropipeline(path):
+    print('--------------------------------')
+    print('CONDUIT MICROPIPELINE')
+    print('--------------------------------')
+    config = reader(path)
+
+    dirs = []
+    dirs.append('None')
+    directorys = os.listdir('.')
+    for directory in directorys:
+        checkdir = os.path.isdir(directory)
+        if checkdir == True:
+            dirs.append(directory)
+    
+    terminal_menu = TerminalMenu(dirs)
+    menu_entry_index = terminal_menu.show()
+    package = dirs[menu_entry_index]
+
+    print('PATH: '+package)
+    
+    if package != 'None':
+
+        trusts = []
+        for trust in config['cdk_trusts']:
+            for key, value in trust.items():
+                trusts.append(key+'<->'+str(value))
+        
+        terminal_menu = TerminalMenu(trusts)
+        menu_entry_index = terminal_menu.show()
+        
+        account = trusts[menu_entry_index].split('<->')
+        
+        print('TRUST: '+str(account[1]))
+ 
+        regions = []
+        for region in config['regions']:
+            regions.append(region)
+        
+        terminal_menu = TerminalMenu(regions)
+        menu_entry_index = terminal_menu.show()
+        
+        region_name = regions[menu_entry_index]
+        
+        print('REGION: '+region_name)
+        
+        s3_client = boto3.client('s3')
+        lambda_client = boto3.client('lambda')
+        conduit_name = 'conduit-micropipeline-'+str(account[1])+'-'+region_name
+        
+        options = [
+            "None",
+            "Deploy",
+            "Destroy"
+        ]
+        terminal_menu = TerminalMenu(options)
+        menu_entry_index = terminal_menu.show()
+    
+        if options[menu_entry_index] != 'None':
+            
+            action = options[menu_entry_index]
+
+            for account in config['accounts']:
+                for key, value in account.items():
+                    for region in config['regions']:
+                        print('--------------------------------')
+                        print(action+' '+key+' '+str(value)+' '+region)
+                        print('--------------------------------')
+                        
+                        package_name = key+'-'+package
+                        
+                        os.system('cp -R '+package+' '+package_name)
+            
+                        f = open(package_name+'/app.py', 'r')
+                        data = f.read()
+                        data = data.replace("os.getenv('CDK_DEFAULT_ACCOUNT')", "'"+str(value)+"'")
+                        data = data.replace("os.getenv('CDK_DEFAULT_REGION')", "'"+region+"'")
+                        f.close()
+
+                        f = open(package_name+'/app.py', 'w')
+                        f.write(data)
+                        f.close()            
+                        
+                        os.system('zip -r '+package_name+'.zip '+package_name)
+                        
+                        s3_client.upload_file(package_name+'.zip', conduit_name, package_name+'.zip')
+
+                        bundle = {}
+                        bundle['bundle'] = package_name+'.zip'
+                        bundle['type'] = action.lower()
+
+                        lambda_client.invoke(
+                            FunctionName = conduit_name,
+                            InvocationType = 'Event',
+                            Payload = json.dumps(bundle)
+                        )
+                        
+                        time.sleep(1)
+
+                        os.system('rm -rf '+package_name)
+                        os.system('rm '+package_name+'.zip')
+
+    print(' ')
+    print('Micropipeline Completed...')
+    print(' ') 
+    
+    main()
+
 def pipeline(config, key, value, region, tags, trusts, lookups):
     
     command = 'export CDK_NEW_BOOTSTRAP=1 && cdk bootstrap aws://'+str(value)+'/'+region+ \
@@ -628,6 +741,7 @@ def main():
         "Configure",
         "Deploy",
         "Destroy",
+        "Micropipeline",
         "Presets",
         "Quit"
     ]

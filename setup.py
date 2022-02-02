@@ -8,7 +8,7 @@ with open("README.md", "r") as f:
 setup(
     name = "aqueduct-utility",
     version = __version__,
-    description = "Automate Cloud Development Kit (CDK) bootstrapping into an AWS Organization using Single Sign-On (SSO) authentication.",
+    description = "Automate Cloud Development Kit (CDK) bootstrapping into an AWS Organization using Single Sign-On (SSO).",
     long_description = long_description,
     long_description_content_type = "text/markdown",
     url = "https://github.com/4n6ir/aqueduct",

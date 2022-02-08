@@ -440,17 +440,10 @@ def micropipeline(path):
         account = trusts[menu_entry_index].split('<->')
         
         print('TRUST: '+str(account[1]))
- 
-        regions = []
-        for region in config['cli_region']:
-            regions.append(region)
         
-        terminal_menu = TerminalMenu(regions)
-        menu_entry_index = terminal_menu.show()
+        region_name = config['cli_region']
         
-        region_name = regions[menu_entry_index]
-        
-        print('REGION: '+region_name)
+        print('CLI REGION: '+region_name)
         
         s3_client = boto3.client('s3')
         lambda_client = boto3.client('lambda')

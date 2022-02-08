@@ -442,7 +442,7 @@ def micropipeline(path):
         print('TRUST: '+str(account[1]))
  
         regions = []
-        for region in config['regions']:
+        for region in config['cli_region']:
             regions.append(region)
         
         terminal_menu = TerminalMenu(regions)

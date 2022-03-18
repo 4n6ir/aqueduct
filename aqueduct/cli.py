@@ -129,7 +129,7 @@ def command(path):
                     try:
                         os.system(cli+' --profile '+key+' --region '+region)
                         print(' ')
-                        print('SUCCESS!!')
+                        print('EXECUTED!!')
                         print(' ')
                     except:
                         print(' ')

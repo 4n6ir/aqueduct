@@ -536,11 +536,13 @@ def presets():
     print(' ')
     
     options = [
+        "npm install -g aws-cdk",
         "cdk init app --language python",
         "python3 -m venv .venv",
         "source .venv/bin/activate",
         "pip3 install -r requirements.txt --upgrade",
-        "npm install -g aws-cdk",
+        "echo .~c9* > ~/.gitignore",
+        "git config --global core.excludesfile ~/.gitignore",
         "Exit!"
     ]
     terminal_menu = TerminalMenu(options)

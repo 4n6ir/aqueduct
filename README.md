@@ -60,7 +60,7 @@ AQUEDUCT v0.8.2
 
 ### Conduit Nanopipeline
 
- - https://github.com/4n6ir/conduit
+ - https://github.com/jblukach/conduit
 
 Permissions
 

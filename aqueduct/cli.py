@@ -35,11 +35,11 @@ def action(menu, path, sso):
         print('Destroying...')
         print(' ')
         destroy(path)
-    elif menu == "Micropipeline":
+    elif menu == "Nanopipeline":
         print(' ')
-        print('Micropipeline...')
+        print('Nanopipeline...')
         print(' ')
-        micropipeline(path)
+        nanopipeline(path)
     elif menu == "Presets":
         print(' ')
         print('Presets...')
@@ -407,9 +407,9 @@ def destroy(path):
     
     main()
 
-def micropipeline(path):
+def nanopipeline(path):
     print('--------------------------------')
-    print('CONDUIT MICROPIPELINE')
+    print('CONDUIT NANOPIPELINE')
     print('--------------------------------')
     config = reader(path)
 
@@ -447,7 +447,7 @@ def micropipeline(path):
         
         s3_client = boto3.client('s3')
         lambda_client = boto3.client('lambda')
-        conduit_name = 'conduit-micropipeline-'+str(account[1])+'-'+region_name
+        conduit_name = 'conduit-nanopipeline-'+str(account[1])+'-'+region_name
         
         options = [
             "None",
@@ -502,7 +502,7 @@ def micropipeline(path):
                         os.system('rm '+package_name+'.zip')
 
     print(' ')
-    print('Micropipeline Completed...')
+    print('Nanopipeline Completed...')
     print(' ') 
     
     main()
@@ -736,7 +736,7 @@ def main():
         "Configure",
         "Deploy",
         "Destroy",
-        "Micropipeline",
+        "Nanopipeline",
         "Presets",
         "Quit"
     ]

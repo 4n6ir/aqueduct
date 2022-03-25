@@ -46,14 +46,14 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.8.1
+AQUEDUCT v0.8.2
 --------------------------------
   Bootstrap
   Command
   Configure
   Deploy
   Destroy
-> Micropipeline
+> Nanopipeline
   Presets
   Quit
 ```

@@ -58,7 +58,7 @@ AQUEDUCT v0.8.2
   Quit
 ```
 
-### Conduit Micropipeline
+### Conduit Nanopipeline
 
  - https://github.com/4n6ir/conduit
 

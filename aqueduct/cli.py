@@ -543,6 +543,7 @@ def presets():
         "pip3 install -r requirements.txt --upgrade",
         "echo .~c9* > ~/.gitignore",
         "git config --global core.excludesfile ~/.gitignore",
+        "git checkout -b dev",
         "Exit!"
     ]
     terminal_menu = TerminalMenu(options)

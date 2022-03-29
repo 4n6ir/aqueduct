@@ -46,7 +46,7 @@ CDK Qualifier [ ]: 4n6ir
 
 ```
 --------------------------------
-AQUEDUCT v0.8.2
+AQUEDUCT v0.8.3
 --------------------------------
   Bootstrap
   Command

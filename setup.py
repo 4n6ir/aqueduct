@@ -6,20 +6,25 @@ with open("README.md", "r") as f:
     long_description = f.read()
 
 setup(
-    name = "aqueduct-utility",
+    name = "aqueduct",
     version = __version__,
-    description = "Automate Cloud Development Kit (CDK) bootstrapping into an AWS Organization using Single Sign-On.",
+    description = "Cloud Development Kit Toolbox",
     long_description = long_description,
     long_description_content_type = "text/markdown",
-    url = "https://github.com/4n6ir/aqueduct",
+    url = "https://github.com/jblukach/aqueduct.git",
     author = "John Lukach",
     author_email = "help@lukach.io",
     license = "Apache-2.0",
     packages = ["aqueduct"],
-    install_requires = ["boto3","simple-term-menu"],
-    zip_safe = False,
+    install_requires = [
+        "aws-sso-lib",
+        "boto3",
+        "typer[all]"
+    ],
     entry_points = {
-        "console_scripts": ["aqueduct=aqueduct.cli:main"],
+        "console_scripts": [
+            "aqueduct=aqueduct.aqueduct:app"
+        ],
     },
     python_requires = ">=3.7",
 )

@@ -55,6 +55,16 @@ Authenticated!!
 
 </details>
 
+<details>
+<summary>Single Sign-Out</summary>
+
+```
+$ aqueduct logout 
+Logged Out!!
+```
+
+</details>
+
 ### Deployment
 
 <details>

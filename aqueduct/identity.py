@@ -197,3 +197,19 @@ def login():
     f.close()
 
     print('Authenticated!!')
+
+def logout():
+
+    identity = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_idp')
+    identity_store = pathlib.Path(identity).read_text()
+
+    sso = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_sso')
+    sso_region = pathlib.Path(sso).read_text()
+
+    aws_sso_lib.sso.logout(
+        start_url = 'https://'+identity_store+'.awsapps.com/start',
+        sso_region = sso_region,
+        sso_cache = None
+    )
+
+    print('Logged Out!!')

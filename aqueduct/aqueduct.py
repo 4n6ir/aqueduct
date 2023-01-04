@@ -29,6 +29,10 @@ def hints():
 def login():
     _idp.login()
 
+@app.command()
+def logout():
+    _idp.logout()
+
 app.add_typer(_nanopipeline.app, name='nanopipeline')
 
 if __name__ == "__main__":

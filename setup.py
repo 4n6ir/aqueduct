@@ -13,7 +13,7 @@ setup(
     long_description_content_type = "text/markdown",
     url = "https://github.com/jblukach/aqueduct.git",
     author = "John Lukach",
-    author_email = "help@lukach.io",
+    author_email = "hello@lukach.io",
     license = "Apache-2.0",
     packages = ["aqueduct"],
     install_requires = [

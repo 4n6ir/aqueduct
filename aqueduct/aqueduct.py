@@ -22,6 +22,7 @@ def hints():
     print('source .venv/bin/activate')
     print('pip3 install -r requirements.txt --upgrade')
     print('echo .~c9* > ~/.gitignore')
+    print('echo cdk.context.json >> ~/.gitignore')
     print('git config --global core.excludesfile ~/.gitignore')
     print('git checkout -b dev')
 

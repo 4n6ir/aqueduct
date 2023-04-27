@@ -217,6 +217,20 @@ Destroy AccountName us-east-1
 
 </details>
 
+### Suppression
+
+<details>
+<summary>Code Generation</summary>
+
+https://constructs.dev/packages/cdk-nag
+
+```
+$ aqueduct nag
+{"id":"AwsSolutions-IAM4","reason":"The IAM user, role, or group uses AWS managed policies."},
+```
+
+</details>
+
 ### Validation
 
 <details>

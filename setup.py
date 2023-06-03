@@ -18,7 +18,6 @@ setup(
     packages = ["aqueduct"],
     install_requires = [
         "aws-sso-lib",
-        "boto3",
         "typer[all]"
     ],
     entry_points = {

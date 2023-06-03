@@ -10,8 +10,6 @@ def login():
     role = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_role')
     cli = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_cli')
     output = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_output')
-    trust = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_trust')
-    regions = pathlib.Path.joinpath(pathlib.Path.home(),'.aqueduct_regions')
 
 ### identity ###
 
@@ -35,7 +33,6 @@ def login():
     if sso.is_file() == False:
 
         sso_region = typer.prompt("SSO Region").strip()
-        _valid.active(sso_region)
         pathlib.Path(sso).write_text(sso_region)
 
     else:
@@ -46,7 +43,6 @@ def login():
         if not correct:
 
             sso_region = typer.prompt("SSO Region").strip()
-            _valid.active(sso_region)
             pathlib.Path(sso).write_text(sso_region)
 
 ### sso login ###
@@ -81,7 +77,6 @@ def login():
     if cli.is_file() == False:
 
         cli_region = typer.prompt("CLI Region").strip()
-        _valid.active(cli_region)
         pathlib.Path(cli).write_text(cli_region)
 
     else:
@@ -92,7 +87,6 @@ def login():
         if not correct:
 
             cli_region = typer.prompt("CLI Region").strip()
-            _valid.active(cli_region)
             pathlib.Path(cli).write_text(cli_region)
 
 ### cli output ###
@@ -113,60 +107,6 @@ def login():
             cli_output = typer.prompt("CLI Output").strip()
             _valid.outputs(cli_output)
             pathlib.Path(output).write_text(cli_output)
-
-### cdk trust ###
-
-    if trust.is_file() == False:
-
-        cdk_trust = typer.prompt("CDK Trust").strip()
-        if len(cdk_trust) == 12 and cdk_trust.isdigit():
-            _valid.accounts(cdk_trust,identity_store,sso_region)
-        else:
-            cdk_trust = _valid.alias(cdk_trust,identity_store,sso_region)
-        pathlib.Path(trust).write_text(cdk_trust)
-
-    else:
-
-        cdk_trust = pathlib.Path(trust).read_text()
-        correct = typer.confirm("CDK Trust {"+cdk_trust+"}")
-
-        if not correct:
-
-            cdk_trust = typer.prompt("CDK Trust").strip()
-            if len(cdk_trust) == 12 and cdk_trust.isdigit():
-                _valid.accounts(cdk_trust,identity_store,sso_region)
-            else:
-                cdk_trust = _valid.alias(cdk_trust,identity_store,sso_region)
-            pathlib.Path(trust).write_text(cdk_trust)
-
-### cdk regions ###
-
-    if regions.is_file() == False:
-
-        cdk_regions = typer.prompt("CDK Regions").strip()
-        try:
-            parsed = cdk_regions.split('|')
-            for parse in parsed:
-                _valid.active(parse)
-            pathlib.Path(regions).write_text(cdk_regions)
-        except:
-            raise typer.Abort()
-
-    else:
-
-        cdk_regions = pathlib.Path(regions).read_text()
-        correct = typer.confirm("CDK Regions {"+cdk_regions+"}")
-
-        if not correct:
-
-            cdk_regions = typer.prompt("CDK Regions").strip()
-            try:
-                parsed = cdk_regions.split('|')
-                for parse in parsed:
-                    _valid.active(parse)
-                pathlib.Path(regions).write_text(cdk_regions)
-            except:
-                raise typer.Abort()
 
 ### configuration ###
     

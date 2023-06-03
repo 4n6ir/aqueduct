@@ -3,7 +3,6 @@ import typer
 import aqueduct.deployment as _deploy
 import aqueduct.destruction as _destroy
 import aqueduct.identity as _idp
-import aqueduct.nanopipeline as _nanopipeline
 
 app = typer.Typer()
 
@@ -25,7 +24,6 @@ def hints():
     print('echo .~c9* > ~/.gitignore')
     print('echo cdk.context.json >> ~/.gitignore')
     print('git config --global core.excludesfile ~/.gitignore')
-    print('git checkout -b dev')
 
 @app.command()
 def login():
@@ -50,8 +48,6 @@ def nag():
                     if parse[1] not in rules:
                         rules.append(parse[1])
                         print('\t\t{"id":"'+parse[1]+'","reason":"'+parse[11]+'"},')      
-
-app.add_typer(_nanopipeline.app, name='nanopipeline')
 
 if __name__ == "__main__":
     app()

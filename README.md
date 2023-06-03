@@ -48,8 +48,6 @@ SSO Region: us-east-2
 SSO Role: AWSAdministratorAccess
 CLI Region: us-east-2
 CLI Output: json
-CDK Trust: 123456789012
-CDK Regions: us-east-1|us-east-2
 Authenticated!!
 ```
 
@@ -145,78 +143,6 @@ git checkout -b dev
 
 </details>
 
-### Nanopipeline
-
-<details>
-<summary>Deploy</summary>
-
-Permissions: ```lambda:InvokeFunction``` & ```s3:PutObject```
-
-```
-$ aqueduct nanopipeline deploy
-Deploy Folder: test
-Deploy [y/N]: y
---------------------------------------
-Deploy AccountName us-east-1
---------------------------------------
-  adding: AccountName-test/ (stored 0%)
-  adding: AccountName-test/test/ (stored 0%)
-  adding: AccountName-test/test/test_stack.py (deflated 45%)
-  adding: AccountName-test/test/__init__.py (stored 0%)
-  adding: AccountName-test/test/__pycache__/ (stored 0%)
-  adding: AccountName-test/test/__pycache__/__init__.cpython-37.pyc (deflated 26%)
-  adding: AccountName-test/test/__pycache__/test_stack.cpython-37.pyc (deflated 35%)
-  adding: AccountName-test/.gitignore (deflated 16%)
-  adding: AccountName-test/README.md (deflated 54%)
-  adding: AccountName-test/app.py (deflated 37%)
-  adding: AccountName-test/cdk.json (deflated 56%)
-  adding: AccountName-test/requirements-dev.txt (stored 0%)
-  adding: AccountName-test/requirements.txt (deflated 4%)
-  adding: AccountName-test/source.bat (deflated 43%)
-  adding: AccountName-test/tests/ (stored 0%)
-  adding: AccountName-test/tests/__init__.py (stored 0%)
-  adding: AccountName-test/tests/unit/ (stored 0%)
-  adding: AccountName-test/tests/unit/__init__.py (stored 0%)
-  adding: AccountName-test/tests/unit/test_test_stack.py (deflated 42%)
-```
-
-</details>
-
-<details>
-<summary>Destroy</summary>
-
-Permissions: ```lambda:InvokeFunction``` & ```s3:PutObject```
-
-```
-$ aqueduct nanopipeline destroy
-Destroy Folder: test
-Destroy [y/N]: y
---------------------------------------
-Destroy AccountName us-east-1
---------------------------------------
-  adding: AccountName-test/ (stored 0%)
-  adding: AccountName-test/test/ (stored 0%)
-  adding: AccountName-test/test/test_stack.py (deflated 45%)
-  adding: AccountName-test/test/__init__.py (stored 0%)
-  adding: AccountName-test/test/__pycache__/ (stored 0%)
-  adding: AccountName-test/test/__pycache__/__init__.cpython-37.pyc (deflated 26%)
-  adding: AccountName-test/test/__pycache__/test_stack.cpython-37.pyc (deflated 35%)
-  adding: AccountName-test/.gitignore (deflated 16%)
-  adding: AccountName-test/README.md (deflated 54%)
-  adding: AccountName-test/app.py (deflated 37%)
-  adding: AccountName-test/cdk.json (deflated 56%)
-  adding: AccountName-test/requirements-dev.txt (stored 0%)
-  adding: AccountName-test/requirements.txt (deflated 4%)
-  adding: AccountName-test/source.bat (deflated 43%)
-  adding: AccountName-test/tests/ (stored 0%)
-  adding: AccountName-test/tests/__init__.py (stored 0%)
-  adding: AccountName-test/tests/unit/ (stored 0%)
-  adding: AccountName-test/tests/unit/__init__.py (stored 0%)
-  adding: AccountName-test/tests/unit/test_test_stack.py (deflated 42%)
-```
-
-</details>
-
 ### Suppression
 
 <details>
@@ -236,10 +162,10 @@ $ aqueduct nag
 <details>
 <summary>Items Checked</summary>
 
- - CLI Output Format
+
  - Deploy Folder
  - Destroy Folder
- - SSO Active Region
+ - Output Format
  - SSO Active Role
 
 </details>

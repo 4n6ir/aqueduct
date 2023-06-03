@@ -138,7 +138,6 @@ pip3 install -r requirements.txt --upgrade
 echo .~c9* > ~/.gitignore
 echo cdk.context.json >> ~/.gitignore
 git config --global core.excludesfile ~/.gitignore
-git checkout -b dev
 ```
 
 </details>

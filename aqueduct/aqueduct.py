@@ -16,9 +16,9 @@ def destroy():
 
 @app.command()
 def hints():
+    print('npm install -g aws-cdk')
     print('npm install -g npm@9.6.7')
     print('npm install -g node@18.0.0 --force')
-    print('npm install -g aws-cdk')
     print('cdk init app --language python')
     print('python3 -m venv .venv')
     print('source .venv/bin/activate')

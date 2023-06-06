@@ -129,7 +129,9 @@ TestStack: destroying...
 <summary>Common Commands</summary>
 
 ```
-$ aqueduct hints 
+$ aqueduct hints
+npm install -g npm@9.6.7
+npm install -g node@18.0.0 --force
 npm install -g aws-cdk
 cdk init app --language python
 python3 -m venv .venv

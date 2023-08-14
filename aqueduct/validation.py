@@ -2,27 +2,6 @@ import aws_sso_lib
 import pathlib
 import typer
 
-def access(role,identity,region):
-
-    roles = aws_sso_lib.list_available_roles(
-        start_url = 'https://'+identity+'.awsapps.com/start',
-        sso_region = region, 
-        login = True
-    )
-
-    rolelist = []
-
-    for account in roles:
-        rolelist.append(account[2])
-
-    unique = list(set(rolelist))
-
-    if role not in unique:
-        print('Role Access:')
-        for item in unique:
-            print(' * '+item)
-        raise typer.Abort()
-
 def folders(folder):
     
     folderlist = []

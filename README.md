@@ -130,13 +130,22 @@ TestStack: destroying...
 
 ```
 $ aqueduct hints
+
+** INSTALLATION **
+
 npm install -g aws-cdk
 npm install -g npm@9.6.7
 npm install -g node@18.0.0 --force
+
+** APPLICATION **
+
 cdk init app --language python
 python3 -m venv .venv
 source .venv/bin/activate
 pip3 install -r requirements.txt --upgrade
+
+** GITIGNORE **
+
 echo .~c9* > ~/.gitignore
 echo cdk.context.json >> ~/.gitignore
 git config --global core.excludesfile ~/.gitignore
@@ -167,7 +176,6 @@ $ aqueduct nag
  - Deploy Folder
  - Destroy Folder
  - Output Format
- - SSO Active Role
 
 </details>
 

@@ -58,7 +58,6 @@ def login():
     if role.is_file() == False:
 
         sso_role = typer.prompt("SSO Role").strip()
-        _valid.access(sso_role, identity_store, sso_region)
         pathlib.Path(role).write_text(sso_role)
 
     else:
@@ -69,7 +68,6 @@ def login():
         if not correct:
 
             sso_role = typer.prompt("SSO Role").strip()
-            _valid.access(sso_role, identity_store, sso_region)
             pathlib.Path(role).write_text(sso_role)
 
 ### cli region ###
